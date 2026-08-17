@@ -1,19 +1,20 @@
-// 1. Правила Игры «Жизнь» (доступны глобально)
+// 1. Ваши правила Игры «Жизнь» Конвея
 window.lifeRules = {
     live: { alive: [2, 3] },
     dead: { birth: [3] },
-    neighbors: [, [1, 0, 1, 0], [0, -1, 1, 0], [-1, 0, 1, 0],
-, [-1, 1, 1, 0], [-1, -1, 1, 0], [1, -1, 1, 0]
+    neighbors: [
+        [0, 1, 1, 0], [1, 0, 1, 0], [0, -1, 1, 0], [-1, 0, 1, 0],
+        [1, 1, 1, 0], [-1, 1, 1, 0], [-1, -1, 1, 0], [1, -1, 1, 0]
     ]
 };
 
-// 2. Блок-приветствие (самоочищается при клике)
+// 2. Блок-приветствие
 elements['Welcome to conway\'s game of life!'] = {
     color: '#c8c8c8',
     category: 'land',
     density: 1000,
     tick: function(pixel) {
-        pixel.element = "eraser"; // По официальному гайду: просто превращаем в ластик/пустоту
+        pixel.element = "eraser"; // Просто превращаем в ластик/пустоту
     }
 };
 
@@ -24,7 +25,6 @@ elements.alive = {
     density: 1000,
     tick: function(pixel) {
         let neigh = 0;
-        
         for (const [xPos, yPos, weight, deadWeight] of window.lifeRules.neighbors) {
             let nx = pixel.x + xPos;
             let ny = pixel.y + yPos;
@@ -32,7 +32,6 @@ elements.alive = {
             if (outOfBounds(nx, ny)) {
                 neigh += deadWeight ?? 0;
             } else {
-                // Используем правильные оси из ядра Sandboxels: pixelMap[y][x]
                 let checkPixel = pixelMap[ny] ? pixelMap[ny][nx] : null;
                 if (checkPixel && checkPixel.element === 'alive') {
                     neigh += weight ?? 1;
@@ -41,8 +40,6 @@ elements.alive = {
                 }
             }
         }
-        
-        // Записываем будущее состояние в кастомное свойство объекта пикселя
         if (!window.lifeRules.live.alive.includes(neigh)) {
             pixel.nextState = 'dead';
         } else {
@@ -58,7 +55,6 @@ elements.dead = {
     density: 1000,
     tick: function(pixel) {
         let neigh = 0;
-        
         for (const [xPos, yPos, weight, deadWeight] of window.lifeRules.neighbors) {
             let nx = pixel.x + xPos;
             let ny = pixel.y + yPos;
@@ -74,7 +70,6 @@ elements.dead = {
                 }
             }
         }
-        
         if (window.lifeRules.dead.birth.includes(neigh)) {
             pixel.nextState = 'alive';
         } else {
@@ -83,8 +78,7 @@ elements.dead = {
     }
 };
 
-// 5. Чистый перенос состояния (Вызывается движком на каждом кадре для каждого пикселя)
-// Этот дополнительный шаг гарантирует синхронность без перезаписи ядра
+// 5. Пост-тик для честной смены поколений
 elements.alive.postTick = function(pixel) {
     if (pixel.nextState) {
         pixel.element = pixel.nextState;
@@ -92,14 +86,18 @@ elements.alive.postTick = function(pixel) {
 };
 elements.dead.postTick = elements.alive.postTick;
 
-// 6. Сортировка кнопок (выводим их в самый верх вкладки land)
-const oldElements = { ...elements };
-for (const key in elements) delete elements[key];
-elements.alive = oldElements.alive;
-elements.dead = oldElements.dead;
-Object.assign(elements, oldElements);
+// 6. Мягкая сортировка кнопок (пересобираем ключи, не уничтожая объект elements)
+const currentElements = { ...elements };
+for (const key in elements) {
+    delete elements[key];
+}
+// Сначала вшиваем ваши
+elements.alive = currentElements.alive;
+elements.dead = currentElements.dead;
+// Потом возвращаем оригинальные
+Object.assign(elements, currentElements);
 
-// Обновляем интерфейс игры
+// Перерисовываем интерфейс (если игра уже загружена, кнопки перерисуются)
 if (typeof window.createButtons === "function") {
     window.createButtons();
 }
