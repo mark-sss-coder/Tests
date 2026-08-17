@@ -11,6 +11,7 @@ window.lifeRules = {
 elements['Welcome to conway\'s game of life!'] = {
     color: '#c8c8c8',
     category: 'land',
+    behavior:behaviors.WALL,
     density: 1000,
     tick: function(pixel) {
         pixel.element = "eraser"; // Превращаем в ластик/пустоту
@@ -21,6 +22,7 @@ elements['Welcome to conway\'s game of life!'] = {
 elements.alive = {
     color: '#cecece',
     category: 'land',
+    behavior:behaviors.WALL,
     density: 1000,
     tick: function(pixel) {
         let neigh = 0;
@@ -51,6 +53,7 @@ elements.alive = {
 elements.dead = {
     color: '#989898',
     category: 'land',
+    behavior:behaviors.WALL,
     density: 1000,
     tick: function(pixel) {
         let neigh = 0;
@@ -88,5 +91,5 @@ elements.dead.postTick = elements.alive.postTick;
 // 6. Безопасное обновление UI
 // Мы ничего не удаляем. Игра сама подтянет новые элементы в категорию land.
 if (typeof window.createButtons === "function") {
-    window.createButtons();
+    //window.createButtons();
 }
