@@ -14,6 +14,7 @@ elements['Welcome to conway\'s game of life!'] = {
     behavior:behaviors.WALL,
     density: 1000,
     state:'solid',
+    id:'caWelcome',
     tick: function(pixel) {
         pixel.element = "eraser"; // Превращаем в ластик/пустоту
     }
@@ -26,6 +27,7 @@ elements.alive = {
     behavior:behaviors.WALL,
     density: 1000,
     state:'solid',
+    id:'aliveCell',
     tick: function(pixel) {
         let neigh = 0;
         for (const [xPos, yPos, weight, deadWeight] of window.lifeRules.neighbors) {
@@ -58,6 +60,7 @@ elements.dead = {
     behavior:behaviors.WALL,
     density: 1000,
     state:'solid',
+    id:'deadCell',
     tick: function(pixel) {
         let neigh = 0;
         for (const [xPos, yPos, weight, deadWeight] of window.lifeRules.neighbors) {
