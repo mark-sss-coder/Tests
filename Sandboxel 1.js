@@ -1,10 +1,9 @@
-// 1. Ваши правила Игры «Жизнь» Конвея
+// 1. Ваши правила Игры «Жизнь» Конвея (открыты глобально)
 window.lifeRules = {
     live: { alive: [2, 3] },
     dead: { birth: [3] },
-    neighbors: [
-        [0, 1, 1, 0], [1, 0, 1, 0], [0, -1, 1, 0], [-1, 0, 1, 0],
-        [1, 1, 1, 0], [-1, 1, 1, 0], [-1, -1, 1, 0], [1, -1, 1, 0]
+    neighbors: [, [1, 0, 1, 0], [0, -1, 1, 0], [-1, 0, 1, 0],
+, [-1, 1, 1, 0], [-1, -1, 1, 0], [1, -1, 1, 0]
     ]
 };
 
@@ -14,7 +13,7 @@ elements['Welcome to conway\'s game of life!'] = {
     category: 'land',
     density: 1000,
     tick: function(pixel) {
-        pixel.element = "eraser"; // Просто превращаем в ластик/пустоту
+        pixel.element = "eraser"; // Превращаем в ластик/пустоту
     }
 };
 
@@ -86,18 +85,8 @@ elements.alive.postTick = function(pixel) {
 };
 elements.dead.postTick = elements.alive.postTick;
 
-// 6. Мягкая сортировка кнопок (пересобираем ключи, не уничтожая объект elements)
-const currentElements = { ...elements };
-for (const key in elements) {
-    delete elements[key];
-}
-// Сначала вшиваем ваши
-elements.alive = currentElements.alive;
-elements.dead = currentElements.dead;
-// Потом возвращаем оригинальные
-Object.assign(elements, currentElements);
-
-// Перерисовываем интерфейс (если игра уже загружена, кнопки перерисуются)
+// 6. Безопасное обновление UI
+// Мы ничего не удаляем. Игра сама подтянет новые элементы в категорию land.
 if (typeof window.createButtons === "function") {
     window.createButtons();
 }
