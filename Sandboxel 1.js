@@ -1,101 +1,31 @@
-// 1. Ваши правила Игры «Жизнь» Конвея (открыты глобально)
-window.lifeRules = {
-    live: { alive: [2, 3] },
-    dead: { birth: [3] },
-    neighbors: [, [1, 0, 1, 0], [0, -1, 1, 0], [-1, 0, 1, 0],
-, [-1, 1, 1, 0], [-1, -1, 1, 0], [1, -1, 1, 0]
-    ]
-};
-
-// 2. Блок-приветствие
-elements['Welcome to conway\'s game of life!'] = {
-    color: '#c8c8c8',
-    category: 'land',
-    behavior:behaviors.WALL,
-    density: 1000,
-    state:'solid',
-    id:'caWelcome',
-    tick: function(pixel) {
-        pixel.element = "eraser"; // Превращаем в ластик/пустоту
-    }
-};
-
-// 3. Живая клетка
+/// <reference path="./sandboxel.d.ts" />
+/**
+ * Neighbors: [x,y,liveWeight?,deadWeight?]
+ */
+//@ts-ignore
+var lifeRules = {live:{live:[2,3]},dead:{live:[3]},neighbors:[[1,1],[1,-1],[-1,1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1]]};
 elements.alive = {
-    color: '#cecece',
-    category: 'land',
-    behavior:behaviors.WALL,
-    density: 1000,
-    state:'solid',
-    id:'aliveCell',
-    tick: function(pixel) {
-        let neigh = 0;
-        for (const [xPos, yPos, weight, deadWeight] of window.lifeRules.neighbors) {
-            let nx = pixel.x + xPos;
-            let ny = pixel.y + yPos;
-            
-            if (outOfBounds(nx, ny)) {
-                neigh += deadWeight ?? 0;
-            } else {
-                let checkPixel = pixelMap[ny] ? pixelMap[ny][nx] : null;
-                if (checkPixel && checkPixel.element === 'alive') {
-                    neigh += weight ?? 1;
-                } else {
-                    neigh += deadWeight ?? 0;
-                }
-            }
-        }
-        if (!window.lifeRules.live.alive.includes(neigh)) {
-            pixel.nextState = 'dead';
-        } else {
-            pixel.nextState = 'alive';
-        }
-    }
-};
-
-// 4. Мертвая клетка
-elements.dead = {
-    color: '#989898',
-    category: 'land',
-    behavior:behaviors.WALL,
-    density: 1000,
-    state:'solid',
-    id:'deadCell',
-    tick: function(pixel) {
-        let neigh = 0;
-        for (const [xPos, yPos, weight, deadWeight] of window.lifeRules.neighbors) {
-            let nx = pixel.x + xPos;
-            let ny = pixel.y + yPos;
-            
-            if (outOfBounds(nx, ny)) {
-                neigh += deadWeight ?? 0;
-            } else {
-                let checkPixel = pixelMap[ny] ? pixelMap[ny][nx] : null;
-                if (checkPixel && checkPixel.element === 'alive') {
-                    neigh += weight ?? 1;
-                } else {
-                    neigh += deadWeight ?? 0;
-                }
-            }
-        }
-        if (window.lifeRules.dead.birth.includes(neigh)) {
-            pixel.nextState = 'alive';
-        } else {
-            pixel.nextState = 'dead';
-        }
-    }
-};
-
-// 5. Пост-тик для честной смены поколений
-elements.alive.postTick = function(pixel) {
-    if (pixel.nextState) {
-        pixel.element = pixel.nextState;
-    }
-};
-elements.dead.postTick = elements.alive.postTick;
-
-// 6. Безопасное обновление UI
-// Мы ничего не удаляем. Игра сама подтянет новые элементы в категорию land.
-if (typeof window.createButtons === "function") {
-    //window.createButtons();
+    color:'#eeeeee',
+    name:'Alive cell',
+    category:'land'
 }
+elements.dead = {
+    color:'#888888',
+    name:'Dead cell',
+    category:'land'
+}
+runEveryTick(()=>{
+    const old = [...pixelMap];
+    for(let i = 0; i < old.length; i++)
+    for(let j = 0; j < old[i].length; j++) {
+        let nCount = 0;
+        for(let n of lifeRules.neighbors) {
+            //@ts-ignore
+            nCount += (outOfBounds(i+n[0],j+n[1])||(old[i+n[0]][j+n[1]]?.element=='alive')?(n[3]??0):(n[2]??1));
+        }
+        //@ts-ignore
+        if(old[i][j]?.element==='alive' && !lifeRules.live.live.includes(nCount)) changePixel(old[i][j],'dead');
+        //@ts-ignore
+        if(old[i][j]?.element==='dead' && lifeRules.dead.live.includes(nCount))  changePixel(old[i][j],'alive');
+    };
+});
